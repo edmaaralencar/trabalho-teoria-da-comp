@@ -34,6 +34,9 @@ const SPECS = [
 
   // Extra grande — segura para testes longos
   { label: "array-size-5000-with-max-value-50", n: 5000, maxVal: 50 },
+
+  // muitos elementos, DP moderada – bom p/ lotes longos
+  { label: "array-size-10000-with-max-value-10", n: 10000, maxVal: 10 }
 ];
 
 // rodar com o mesmo seed 
