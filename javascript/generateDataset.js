@@ -39,16 +39,11 @@ const SPECS = [
   { label: "array-size-10000-with-max-value-10", n: 10000, maxVal: 10 }
 ];
 
-// rodar com o mesmo seed 
-
 let seed = 123456789
-console.log({seed})
 function rand01() {
   seed = (1103515245 * seed + 12345) % 0x7fffffff;
   return seed / 0x7fffffff;
 }
-
-console.log(rand01())
 
 function genInstance(n, maxVal) {
   const arr = Array.from({ length: n }, () => 1 + Math.floor(rand01() * maxVal));
