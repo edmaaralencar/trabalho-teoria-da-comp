@@ -12,7 +12,7 @@
 
 #define DATASET_DIR "../datasets"
 #define DATA_DIR    "../data"
-#define TIMES       20
+#define TIMES       15
 
 int subset_sum(const int *arr, int n, int target);
 

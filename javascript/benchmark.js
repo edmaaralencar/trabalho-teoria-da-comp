@@ -3,7 +3,7 @@ import path from "node:path";
 import { subsetSum } from "./subsetSum.js";
 
 const ROOT = process.cwd();
-const TIMES = 20;
+const TIMES = 15;
 const DATASET_DIR = path.join(ROOT, "datasets");
 const DATA_DIR = path.join(ROOT, "data");
 mkdirSync(DATA_DIR, { recursive: true });
@@ -34,7 +34,7 @@ if (files.length === 0) {
 }
 
 for (let run = 1; run <= TIMES; run++) {
-  console.log(`\n=== Run ${run}/${TIMES} ===`);
+  console.log(`\n=== Executando: ${run}/${TIMES} ===`);
   const rows = ["language,label,n,maxVal,file,elapsed_ms"]; // fresh per run
 
   for (const file of files) {

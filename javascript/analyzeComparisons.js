@@ -1,21 +1,13 @@
-// src/analyzeComparison.js
-// Lê TODOS os arquivos js_results*.csv e c_results*.csv em data/,
-// agrega por label e calcula médias + razão JS/C.
-// Uso: node src/analyzeComparison.js
-
 import { readdirSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import path from "path";
 
 const DATA_DIR = path.join(process.cwd(), "data");
 const OUT_FILE = path.join(DATA_DIR, "comparison_summary.csv");
 
-// ----------------- Utilitários -----------------
-
 function listResultFiles(prefix) {
   const all = readdirSync(DATA_DIR);
   const matched = all
     .filter((f) => f.startsWith(prefix) && f.endsWith(".csv"))
-    // ordenar numericamente quando houver sufixo "-N"
     .sort((a, b) => {
       const na = a.match(/-(\d+)\.csv$/)?.[1];
       const nb = b.match(/-(\d+)\.csv$/)?.[1];
@@ -25,7 +17,6 @@ function listResultFiles(prefix) {
       return a.localeCompare(b);
     });
 
-  // fallback para arquivo simples sem sufixo, caso nenhum -N exista
   if (matched.length === 0) {
     const single = `${prefix}.csv`;
     if (readdirSync(DATA_DIR).includes(single)) return [single];
@@ -45,8 +36,8 @@ function parseCsv(pathStr) {
     const parts = lines[i].split(",");
     if (parts.length < header.length) continue;
     const row = {};
+
     header.forEach((h, idx) => (row[h.trim()] = parts[idx]?.trim()));
-    // normalizações
     row.elapsed_ms = parseFloat(row.elapsed_ms);
     row.n = parseInt(row.n, 10);
     row.maxVal = parseInt(row.maxVal, 10);
@@ -84,7 +75,12 @@ function mean(values) {
   return values.reduce((a, b) => a + b, 0) / values.length;
 }
 
-// ----------------- Pipeline -----------------
+function std(arr) {
+  if (arr.length <= 1) return 0;
+  const m = mean(arr);
+  const variance = arr.reduce((sum, x) => sum + (x - m) ** 2, 0) / arr.length;
+  return Math.sqrt(variance);
+}
 
 console.log("🔎 Lendo e agregando CSVs em /data ...");
 const jsRows = loadAll("js_results");
@@ -98,18 +94,19 @@ const allLabels = new Set([
   ...Object.keys(cGroups),
 ]);
 
-const out = ["label,n,maxVal,mean_js_ms,mean_c_ms,ratio_js_c"];
+const out = ["label,n,maxVal,mean_js_ms,sd_js_ms,mean_c_ms,sd_c_ms,ratio_js_c"];
 
 for (const label of Array.from(allLabels).sort()) {
   const js = jsGroups[label] || [];
   const c = cGroups[label] || [];
 
-  // n e maxVal: pegamos do primeiro disponível daquele label
   const n = js[0]?.n ?? c[0]?.n ?? 0;
   const maxVal = js[0]?.maxVal ?? c[0]?.maxVal ?? 0;
 
   const meanJs = mean(js.map((r) => r.elapsed_ms));
   const meanC = mean(c.map((r) => r.elapsed_ms));
+  const sdJs = std(js.map(r => r.elapsed_ms));
+  const sdC = std(c.map(r => r.elapsed_ms));
   const ratio = meanC > 0 ? meanJs / meanC : 0;
 
   out.push(
@@ -118,7 +115,9 @@ for (const label of Array.from(allLabels).sort()) {
       n,
       maxVal,
       meanJs.toFixed(3),
+      sdJs.toFixed(3),
       meanC.toFixed(3),
+      sdC.toFixed(3),
       ratio.toFixed(2),
     ].join(",")
   );

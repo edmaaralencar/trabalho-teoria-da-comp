@@ -8,31 +8,30 @@ BIN    := benchmark
 .PHONY: all generate compile run analyze clean
 
 # Full pipeline
-all: generate run analyze
+all: deletefiles generate run analyze
 
-# 1) Generate dataset
+deletefiles:
+	@echo "=== Deletando arquivos data e datasets ==="
+	rm -rf data datasets
+
 generate:
-	@echo "=== Generating dataset ==="
+	@echo "=== Gerando datasets ==="
 	@node $(JS_DIR)/generateDataset.js
 
-# 2) Compile C inside ./c
 compile:
-	@echo "=== Compiling C benchmark ==="
+	@echo "=== Compilando arquivo de C benchmark.c ==="
 	@cd $(C_DIR) && gcc -O3 -o $(BIN) benchmark.c subset_sum.c && chmod +x $(BIN)
 
-# 3) Run benchmarks (JS + C)
 run: compile
-	@echo "=== Running JS benchmark ==="
+	@echo "=== Executando benchmark de JS ==="
 	@node $(JS_DIR)/benchmark.js
-	@echo "=== Executing C benchmark ==="
+	@echo "=== Executando benchmark de C ==="
 	@cd $(C_DIR) && ./$(BIN)
 
-# 4) Analyze results
 analyze:
-	@echo "=== Analyzing comparisons ==="
+	@echo "=== Analisando ==="
 	@node $(JS_DIR)/analyzeComparisons.js
 
-# Cleanup compiled binary inside ./c
 clean:
-	@echo "=== Cleaning build artifacts ==="
+	@echo "=== Cleanup ==="
 	@cd $(C_DIR) && rm -f $(BIN)
