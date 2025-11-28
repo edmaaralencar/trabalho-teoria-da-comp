@@ -8,7 +8,7 @@ int subset_sum(const int *arr, int n, int target) {
     unsigned char *dp = (unsigned char *)calloc((size_t)target + 1, 1);
     if (!dp) return 0;
 
-    dp[0] = 1; // soma 0 possível
+    dp[0] = 1;
 
     for (int i = 0; i < n; i++) {
         int v = arr[i];

@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import path from "path";
 
-const DATA_DIR = path.join(process.cwd(), "data");
+const DATA_DIR = path.join(process.cwd(), "analysis", "data");
 const OUT_FILE = path.join(DATA_DIR, "comparison_summary.csv");
 
 function listResultFiles(prefix) {

@@ -12,26 +12,26 @@ all: deletefiles generate run analyze
 
 deletefiles:
 	@echo "=== Deletando arquivos data e datasets ==="
-	rm -rf data datasets
+	rm -rf analysis/data analysis/datasets
 
 generate:
 	@echo "=== Gerando datasets ==="
-	@node $(JS_DIR)/generateDataset.js
+	@node analysis/generateDataset.js
 
 compile:
 	@echo "=== Compilando arquivo de C benchmark.c ==="
-	@cd $(C_DIR) && gcc -O3 -o $(BIN) benchmark.c subset_sum.c && chmod +x $(BIN)
+	@cd subset-sum/$(C_DIR) && gcc -O3 -o $(BIN) benchmark.c subset_sum.c && chmod +x $(BIN)
 
 run: compile
 	@echo "=== Executando benchmark de JS ==="
-	@node $(JS_DIR)/benchmark.js
+	@node subset-sum/$(JS_DIR)/benchmark.js
 	@echo "=== Executando benchmark de C ==="
-	@cd $(C_DIR) && ./$(BIN)
+	@cd subset-sum/$(C_DIR) && ./$(BIN)
 
 analyze:
 	@echo "=== Analisando ==="
-	@node $(JS_DIR)/analyzeComparisons.js
+	@node analysis/analyzeComparisons.js
 
 clean:
 	@echo "=== Cleanup ==="
-	@cd $(C_DIR) && rm -f $(BIN)
+	@cd subset-sum/$(C_DIR) && rm -f $(BIN)

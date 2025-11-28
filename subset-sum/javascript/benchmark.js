@@ -2,7 +2,7 @@ import { readdirSync, readFileSync, mkdirSync, writeFileSync, statSync } from "n
 import path from "node:path";
 import { subsetSum } from "./subsetSum.js";
 
-const ROOT = process.cwd();
+const ROOT = path.join(process.cwd(), "analysis");
 const TIMES = 15;
 const DATASET_DIR = path.join(ROOT, "datasets");
 const DATA_DIR = path.join(ROOT, "data");

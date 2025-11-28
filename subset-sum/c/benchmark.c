@@ -1,7 +1,3 @@
-// c/benchmark_all_runs.c
-// Compilar: clang -O3 -o benchmark_all_runs benchmark_all_runs.c subset_sum.c
-// Executar : ./benchmark_all_runs
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -10,20 +6,18 @@
 #include <sys/stat.h>
 #include <time.h>
 
-#define DATASET_DIR "../datasets"
-#define DATA_DIR    "../data"
+#define DATASET_DIR "../../analysis/datasets"
+#define DATA_DIR    "../../analysis/data"
 #define TIMES       15
 
 int subset_sum(const int *arr, int n, int target);
 
-// ---------- tempo em ns ----------
 static uint64_t now_ns() {
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
     return (uint64_t)ts.tv_sec * 1000000000ULL + (uint64_t)ts.tv_nsec;
 }
 
-// ---------- leitura simples de JSON (compatível com o gerador JS) ----------
 static int load_json_array(const char *path, int **outArr, int *outN, int *outTarget, int *outMaxVal) {
     FILE *f = fopen(path, "r");
     if (!f) return -1;
@@ -78,7 +72,6 @@ static int load_json_array(const char *path, int **outArr, int *outN, int *outTa
     return 0;
 }
 
-// ---------- lista recursiva de .json (como listJsonFiles do JS) ----------
 typedef struct {
     char **items;
     size_t len;
@@ -127,20 +120,16 @@ static int cmp_strptr(const void *a, const void *b) {
     return strcmp(sa, sb);
 }
 
-// ---------- util: cria pasta data/ se não existir ----------
-static void ensure_data_dir(void) {
+static void upsert_data_dir(void) {
     struct stat st = {0};
     if (stat(DATA_DIR, &st) == -1) {
         mkdir(DATA_DIR, 0700);
     }
 }
 
-// ---------- extrai label (nome da pasta pai) ----------
-static const char* label_from_path(const char *fullpath) {
-    // fullpath: ../datasets/<label>/<file>.json
+static const char* get_label_from_path(const char *fullpath) {
     const char *last_slash = strrchr(fullpath, '/');
     if (!last_slash) return fullpath;
-    // retrocede para achar a barra anterior: .../<label>/<file>
     size_t len = (size_t)(last_slash - fullpath);
     static char label[512];
     const char *p = fullpath + len - 1;
@@ -153,9 +142,7 @@ static const char* label_from_path(const char *fullpath) {
     return label;
 }
 
-// ---------- main ----------
 int main() {
-    // 1) Coleta e ordena todos os JSONs (equivalente ao .sort() do JS)
     strvec files; sv_init(&files);
     list_json_files(DATASET_DIR, &files);
     if (files.len == 0) {
@@ -164,9 +151,8 @@ int main() {
     }
     qsort(files.items, files.len, sizeof(char *), cmp_strptr);
 
-    ensure_data_dir();
+    upsert_data_dir();
 
-    // 2) Executa TIMES runs; cada run gera c_results-<run>.csv com cabeçalho
     for (int run = 1; run <= TIMES; run++) {
         printf("\n=== Run %d/%d ===\n", run, TIMES);
 
@@ -175,7 +161,6 @@ int main() {
         FILE *out = fopen(outPath, "w");
         if (!out) {
             perror("opening output csv");
-            // libera memória antes de sair
             for (size_t i = 0; i < files.len; i++) free(files.items[i]);
             free(files.items);
             return 1;
@@ -184,7 +169,7 @@ int main() {
 
         for (size_t i = 0; i < files.len; i++) {
             const char *file = files.items[i];
-            const char *label = label_from_path(file);
+            const char *label = get_label_from_path(file);
             const char *filename = strrchr(file, '/');
             filename = filename ? filename + 1 : file;
 
@@ -208,7 +193,6 @@ int main() {
         printf("📊 Resultados salvos em: %s\n", outPath);
     }
 
-    // 3) limpeza
     for (size_t i = 0; i < files.len; i++) free(files.items[i]);
     free(files.items);
     return 0;
